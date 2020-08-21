@@ -20,9 +20,18 @@
         android:textSize="25sp" />
 
     <ListView
-        android:id="@+id/lv_chatting_page_receive_block"
+        android:id="@+id/lv_chatting_page_member_block"
         android:layout_width="343dp"
-        android:layout_height="473dp"
+        android:layout_height="100dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="17dp"
+        android:layout_marginBottom="467dp" />
+
+    <ListView
+        android:id="@+id/lv_chatting_page_receive_block"
+        android:layout_width="342dp"
+        android:layout_height="361dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentBottom="true"
         android:layout_marginLeft="19dp"
