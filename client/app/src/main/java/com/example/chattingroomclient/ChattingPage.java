@@ -171,8 +171,6 @@ public class ChattingPage extends AppCompatActivity {
 
     private void connect(Context _package) {
         netThread = new Thread(new Runnable() {
-            Context _pac;
-
             @Override
             public void run() {
                 try {
@@ -204,12 +202,7 @@ public class ChattingPage extends AppCompatActivity {
                 }
 
             }
-
-            private Runnable init(Context pac) {
-                _pac = pac;
-                return this;
-            }
-        }.init(_package));
+        });
 
         netThread.start();
         while (netThread.isAlive()) {
@@ -276,7 +269,7 @@ public class ChattingPage extends AppCompatActivity {
                     @Override
                     public void run() {
                         receivedMsg.add(_hostMsg.getMsg_body());
-                        ArrayAdapter adapter = new ArrayAdapter(_package, R.layout.msg_box, receivedMsg.toArray());
+                        ArrayAdapter adapter = new ArrayAdapter(ChattingPage.this, R.layout.msg_box, receivedMsg.toArray());
                         receive_block.setAdapter(adapter);
                         receive_block.setSelection(adapter.getCount() - 1);
                     }
