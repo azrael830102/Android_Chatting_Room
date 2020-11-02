@@ -80,11 +80,11 @@ public class ChattingPage extends AppCompatActivity {
             public void handleMessage(Message msg) {
                 switch (msg.what) {
                     case 0:
-                        MsgJsonFormatObj receiveObj = (MsgJsonFormatObj)msg.obj;
+                        MsgJsonFormatObj receiveObj = (MsgJsonFormatObj) msg.obj;
                         receivedMsg.add(receiveObj.getMsg_body());
                         ArrayAdapter adapter = new ArrayAdapter(_package, R.layout.msg_box, receivedMsg.toArray());
                         receive_block.setAdapter(adapter);
-                        receive_block.setSelection(adapter.getCount()-1);
+                        receive_block.setSelection(adapter.getCount() - 1);
                         break;
                 }
             }
@@ -96,8 +96,10 @@ public class ChattingPage extends AppCompatActivity {
         }.init(this);
 
         connect(this);
+
         btn_leave.setOnClickListener(new View.OnClickListener() {
             private Socket _serverSocket;
+
             @Override
             public void onClick(View v) {
                 msgObj.set_isAlive(false);
@@ -105,11 +107,11 @@ public class ChattingPage extends AppCompatActivity {
                     @Override
                     public void run() {
                         try {
-                            SendingMsg(_serverSocket,msgObj);
-                            if(clientSocketThread.isAlive()){
+                            SendingMsg(_serverSocket, msgObj);
+                            if (clientSocketThread.isAlive()) {
                                 clientSocketThread.interrupt();
                             }
-                            if(serverSocket.isConnected()) {
+                            if (serverSocket.isConnected()) {
                                 serverSocket.close();
                             }
                         } catch (Exception e) {
@@ -118,17 +120,18 @@ public class ChattingPage extends AppCompatActivity {
                     }
                 });
                 sendThread.start();
-                while (sendThread.isAlive()){
+                while (sendThread.isAlive()) {
 
                 }
-                try{
+                try {
                     Intent it = new Intent();
                     it.setClass(ChattingPage.this, MainActivity.class);
                     startActivity(it);
-                }catch (Exception e){
-                 Log.e("Error",e.getMessage());
+                } catch (Exception e) {
+                    Log.e("Error", e.getMessage());
                 }
             }
+
             private View.OnClickListener init(Socket serverSocket) {
                 _serverSocket = serverSocket;
                 return this;
@@ -137,26 +140,28 @@ public class ChattingPage extends AppCompatActivity {
 
         btn_send.setOnClickListener(new View.OnClickListener() {
             private Socket _serverSocket;
+
             @Override
             public void onClick(View v) {
-                msgObj.setMsg_body(et_sending_msg.getText().toString()+"\n");
+                msgObj.setMsg_body(et_sending_msg.getText().toString() + "\n");
                 Thread sendThread = new Thread(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            SendingMsg(_serverSocket,msgObj);
+                            SendingMsg(_serverSocket, msgObj);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                     }
                 });
                 sendThread.start();
-                while (sendThread.isAlive()){
+                while (sendThread.isAlive()) {
 
                 }
                 sendThread.interrupt();
                 et_sending_msg.setText("");
             }
+
             private View.OnClickListener init(Socket serverSocket) {
                 _serverSocket = serverSocket;
                 return this;
@@ -167,15 +172,16 @@ public class ChattingPage extends AppCompatActivity {
     private void connect(Context _package) {
         netThread = new Thread(new Runnable() {
             Context _pac;
+
             @Override
             public void run() {
                 try {
                     Log.d("Connect", "Waitting to connect......");
                     serverSocket = SocketFactory.getDefault().createSocket();
                     SocketAddress remoteaddr = new InetSocketAddress(server_ip, Integer.parseInt(server_port));
-                    try{
+                    try {
                         serverSocket.connect(remoteaddr, 5000);
-                    }catch (SocketTimeoutException | UnknownHostException  se){
+                    } catch (SocketTimeoutException | UnknownHostException se) {
                         Intent it = new Intent();
                         Bundle bundle = new Bundle();
                         bundle.putString("errMsg", "This chatting room does not exist");
@@ -198,14 +204,15 @@ public class ChattingPage extends AppCompatActivity {
                 }
 
             }
-            private Runnable init( Context pac){
+
+            private Runnable init(Context pac) {
                 _pac = pac;
                 return this;
             }
         }.init(_package));
 
         netThread.start();
-        while (netThread.isAlive()){
+        while (netThread.isAlive()) {
         }
     }
 
@@ -223,10 +230,10 @@ public class ChattingPage extends AppCompatActivity {
                         break;
                     }
                 }
-                if(clientSocketThread.isAlive()){
+                if (clientSocketThread.isAlive()) {
                     clientSocketThread.interrupt();
                 }
-                if(serverSocket.isConnected()) {
+                if (serverSocket.isConnected()) {
                     serverSocket.close();
                 }
                 Intent it = new Intent();
@@ -258,10 +265,27 @@ public class ChattingPage extends AppCompatActivity {
 
             MsgJsonFormatObj hostMsg = jsonObjToMsgObj(jsonObject);
             if (hostMsg != null && hostMsg.isAlive()) {
-                Message msg = Message.obtain();
-                msg.what = 0;
-                msg.obj = hostMsg;
-                mMainHandler.sendMessage(msg);
+//                Message msg = Message.obtain();
+//                msg.what = 0;
+//                msg.obj = hostMsg;
+                //mMainHandler.sendMessage(msg);
+                runOnUiThread(new Runnable() {
+                    MsgJsonFormatObj _hostMsg;
+                    Context _package;
+
+                    @Override
+                    public void run() {
+                        receivedMsg.add(_hostMsg.getMsg_body());
+                        ArrayAdapter adapter = new ArrayAdapter(_package, R.layout.msg_box, receivedMsg.toArray());
+                        receive_block.setAdapter(adapter);
+                        receive_block.setSelection(adapter.getCount() - 1);
+                    }
+                    public Runnable init(Context pac, MsgJsonFormatObj hostMsg){
+                        _package = pac;
+                        _hostMsg = hostMsg;
+                        return this;
+                    }
+                }.init(this, hostMsg));
 
                 if (hostMsg.get_id().equals("")) {
                     return false;
@@ -281,17 +305,16 @@ public class ChattingPage extends AppCompatActivity {
     private static void SendingMsg(Socket socket, MsgJsonFormatObj msgObj) {
         try {
             JSONObject json = new JSONObject(msgObjToMap(msgObj));
-            byte[] jsonByte = (json.toString()+"\n").getBytes();
+            byte[] jsonByte = (json.toString() + "\n").getBytes();
             DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
             outputStream.write(jsonByte);
             outputStream.flush();
         } catch (Exception e) {
             Log.e("Error", e.getMessage());
         }
-
     }
 
-    private static  MsgJsonFormatObj jsonObjToMsgObj(JSONObject jsonObj) throws JSONException {
+    private static MsgJsonFormatObj jsonObjToMsgObj(JSONObject jsonObj) throws JSONException {
 
         String id = jsonObj.getString("Id");
         String name = jsonObj.getString("Username");
@@ -320,14 +343,14 @@ public class ChattingPage extends AppCompatActivity {
         btn_leave = (Button) findViewById(R.id.btn_chatting_page_btn_leave);
     }
 
-    private static String parseInfo(InputStream in){
+    private static String parseInfo(InputStream in) {
         String str = "";
-        try{
+        try {
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
             str = br.readLine();
             Log.d("parseInfo() : ", str);
-        }catch (IOException e){
-            Log.e("parseInfo Error",e.getMessage());
+        } catch (IOException e) {
+            Log.e("parseInfo Error", e.getMessage());
             e.printStackTrace();
         }
         return str;
@@ -336,13 +359,16 @@ public class ChattingPage extends AppCompatActivity {
     class RunnableCallable implements Callable<String>, Runnable {
         InputStream _in;
         String resultStr;
+
         @Override
         public void run() {
             resultStr = parseInfo(_in);
         }
+
         public RunnableCallable(InputStream in) {
             _in = in;
         }
+
         @Override
         public String call() {
             return resultStr;

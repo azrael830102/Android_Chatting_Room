@@ -15,7 +15,7 @@
         android:layout_alignParentBottom="true"
         android:layout_marginLeft="150dp"
         android:layout_marginBottom="357dp"
-        android:hint="Please enter name..."
+        android:hint="Please enter name...."
         android:text="Server"
         android:textSize="25sp" />
 
