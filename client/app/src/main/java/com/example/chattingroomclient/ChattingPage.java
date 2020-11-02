@@ -200,7 +200,6 @@ public class ChattingPage extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
             }
         });
 
@@ -264,8 +263,6 @@ public class ChattingPage extends AppCompatActivity {
                 //mMainHandler.sendMessage(msg);
                 runOnUiThread(new Runnable() {
                     MsgJsonFormatObj _hostMsg;
-                    Context _package;
-
                     @Override
                     public void run() {
                         receivedMsg.add(_hostMsg.getMsg_body());
@@ -274,7 +271,6 @@ public class ChattingPage extends AppCompatActivity {
                         receive_block.setSelection(adapter.getCount() - 1);
                     }
                     public Runnable init(Context pac, MsgJsonFormatObj hostMsg){
-                        _package = pac;
                         _hostMsg = hostMsg;
                         return this;
                     }
